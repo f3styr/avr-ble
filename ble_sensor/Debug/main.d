@@ -28,7 +28,8 @@ main.d main.o: .././main.c ../atmel_start.h ../include/driver_init.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
  ../utils/atomic.h ../drivers/mcp9844.h ../drivers/bma253.h \
- ../drivers/ble.h ../drivers/tempandhum.h ../include/i2c_simple_master.h
+ ../drivers/bluetooth/ble.h ../drivers/tempandhum.h \
+ ../include/i2c_simple_master.h
 
 ../atmel_start.h:
 
@@ -112,7 +113,7 @@ f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 ../drivers/bma253.h:
 
-../drivers/ble.h:
+../drivers/bluetooth/ble.h:
 
 ../drivers/tempandhum.h:
 

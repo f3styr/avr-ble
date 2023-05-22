@@ -4,7 +4,7 @@
 #include <atomic.h>
 #include <drivers/mcp9844.h>
 #include <drivers/bma253.h>
-#include <drivers/ble.h>
+#include <drivers/bluetooth/ble.h>
 #include <drivers/tempandhum.h>
 
 #define TICK_RATE (1000 / 10.0)
@@ -51,6 +51,13 @@ int main(void)
 	
 		
 	while (1) {
+		//bluetooth_main_loop();
+		//usb_main_loop();
+		//tl_main_loop();
+				
+				
+				/* this should be here */
+				
 				
 
 		_delay_ms(3000);

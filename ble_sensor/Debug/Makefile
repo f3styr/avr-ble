@@ -37,6 +37,8 @@ SUBDIRS :=  \
 ../doxygen/ \
 ../doxygen/generator/ \
 ../drivers \
+../drivers/bluetooth \
+../drivers/bluetooth/rn487x \
 ../examples/ \
 ../examples/include/ \
 ../examples/src/ \
@@ -56,6 +58,7 @@ SUBDIRS :=  \
 ../modules/twi/doc/ \
 ../modules/usart/ \
 ../modules/usart/doc/ \
+../board \
 ../src/ \
 ../utils/ \
 ../utils/assembler/
@@ -64,7 +67,8 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../atmel_start.c \
-../drivers/ble.c \
+../drivers/bluetooth/ble.c \
+../drivers/bluetooth/rn487x/rn487x.c \
 ../drivers/bma253.c \
 ../drivers/mcp9844.c \
 ../drivers/tempandhum.c \
@@ -93,7 +97,8 @@ ASM_SRCS +=
 
 OBJS +=  \
 atmel_start.o \
-drivers/ble.o \
+drivers/bluetooth/ble.o \
+drivers/bluetooth/rn487x/rn487x.o \
 drivers/bma253.o \
 drivers/mcp9844.o \
 drivers/tempandhum.o \
@@ -115,7 +120,8 @@ src/usart_basic.o
 
 OBJS_AS_ARGS +=  \
 atmel_start.o \
-drivers/ble.o \
+drivers/bluetooth/ble.o \
+drivers/bluetooth/rn487x/rn487x.o \
 drivers/bma253.o \
 drivers/mcp9844.o \
 drivers/tempandhum.o \
@@ -137,7 +143,8 @@ src/usart_basic.o
 
 C_DEPS +=  \
 atmel_start.d \
-drivers/ble.d \
+drivers/bluetooth/ble.d \
+drivers/bluetooth/rn487x/rn487x.d \
 drivers/bma253.d \
 drivers/mcp9844.d \
 drivers/tempandhum.d \
@@ -159,7 +166,8 @@ src/usart_basic.d
 
 C_DEPS_AS_ARGS +=  \
 atmel_start.d \
-drivers/ble.d \
+drivers/bluetooth/ble.d \
+drivers/bluetooth/rn487x/rn487x.d \
 drivers/bma253.d \
 drivers/mcp9844.d \
 drivers/tempandhum.d \
@@ -200,7 +208,14 @@ LINKER_SCRIPT_DEP+=
 	@echo Finished building: $<
 	
 
-drivers/ble.o: ../drivers/ble.c
+drivers/bluetooth/ble.o: ../drivers/bluetooth/ble.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)F:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"../examples/include" -I"../include" -I"../utils" -I"../utils/assembler" -I".." -I"../Config" -I"F:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega3208 -B "F:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\gcc\dev\atmega3208" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+drivers/bluetooth/rn487x/rn487x.o: ../drivers/bluetooth/rn487x/rn487x.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)F:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"../examples/include" -I"../include" -I"../utils" -I"../utils/assembler" -I".." -I"../Config" -I"F:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega3208 -B "F:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\ATmega_DFP\1.6.364\gcc\dev\atmega3208" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

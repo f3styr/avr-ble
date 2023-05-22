@@ -1,4 +1,5 @@
-drivers/ble.d drivers/ble.o: ../drivers/ble.c ../drivers/ble.h \
+drivers/bluetooth/ble.d drivers/bluetooth/ble.o: \
+ ../drivers/bluetooth/ble.c ../drivers/bluetooth/ble.h \
  ../include/usart_basic.h ../atmel_start.h ../include/driver_init.h \
  ../utils/compiler.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
@@ -29,7 +30,7 @@ drivers/ble.d drivers/ble.o: ../drivers/ble.c ../drivers/ble.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h
 
-../drivers/ble.h:
+../drivers/bluetooth/ble.h:
 
 ../include/usart_basic.h:
 

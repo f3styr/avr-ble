@@ -37,7 +37,7 @@ f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/..
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avrxmega3\libgcc.a(_copy_data.o)
                               src/i2c_master.o (__do_copy_data)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avrxmega3\libgcc.a(_clear_bss.o)
-                              drivers/ble.o (__do_clear_bss)
+                              drivers/bluetooth/ble.o (__do_clear_bss)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avrxmega3\libgcc.a(_mulshisi3.o)
                               drivers/tempandhum.o (__mulshisi3)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avrxmega3\libgcc.a(_muluhisi3.o)
@@ -45,19 +45,19 @@ f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/..
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avrxmega3\libgcc.a(_umulhisi3.o)
                               f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avrxmega3\libgcc.a(_muluhisi3.o) (__umulhisi3)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(strtol.o)
-                              drivers/ble.o (strtol)
+                              drivers/bluetooth/ble.o (strtol)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(isspace.o)
                               f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(strtol.o) (isspace)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(strncmp.o)
                               examples/src/usart_basic_example.o (strncmp)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(strstr.o)
-                              drivers/ble.o (strstr)
+                              drivers/bluetooth/ble.o (strstr)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(iob.o)
                               src/usart_basic.o (__iob)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(printf.o)
-                              drivers/ble.o (printf)
+                              drivers/bluetooth/ble.o (printf)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(sprintf.o)
-                              drivers/ble.o (sprintf)
+                              drivers/bluetooth/ble.o (sprintf)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(vfprintf_std.o)
                               f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(printf.o) (vfprintf)
 f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(errno.o)
@@ -88,13 +88,13 @@ H1_RH_X2            0x2               drivers/tempandhum.o
 H0_RH_X2            0x2               drivers/tempandhum.o
 errno               0x2               f:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avrxmega3\libc.a(errno.o)
 T0_OUT              0x2               drivers/tempandhum.o
-ble_rx_buff         0x100             drivers/ble.o
+ble_rx_buff         0x100             drivers/bluetooth/ble.o
 read_data           0x2               examples/src/i2c_master_example.o
 T1_DEGC_X8          0x2               drivers/tempandhum.o
 err                 0x1               drivers/tempandhum.o
 H0_T0               0x2               drivers/tempandhum.o
 T1_OUT              0x2               drivers/tempandhum.o
-ble_cmd_buff        0x80              drivers/ble.o
+ble_cmd_buff        0x80              drivers/bluetooth/ble.o
 ble_rptr            0x2               main.o
 T1_T0_MSB           0x2               drivers/tempandhum.o
 error               0x1               drivers/bma253.o
@@ -109,9 +109,15 @@ Discarded input sections
  .text          0x00000000        0x0 atmel_start.o
  .data          0x00000000        0x0 atmel_start.o
  .bss           0x00000000        0x0 atmel_start.o
- .text          0x00000000        0x0 drivers/ble.o
- .data          0x00000000        0x0 drivers/ble.o
- .bss           0x00000000        0x0 drivers/ble.o
+ .text          0x00000000        0x0 drivers/bluetooth/ble.o
+ .data          0x00000000        0x0 drivers/bluetooth/ble.o
+ .bss           0x00000000        0x0 drivers/bluetooth/ble.o
+ .text          0x00000000        0x0 drivers/bluetooth/rn487x/rn487x.o
+ .data          0x00000000        0x0 drivers/bluetooth/rn487x/rn487x.o
+ .bss           0x00000000        0x0 drivers/bluetooth/rn487x/rn487x.o
+ .debug_line    0x00000000        0x0 drivers/bluetooth/rn487x/rn487x.o
+ .debug_str     0x00000000       0xfc drivers/bluetooth/rn487x/rn487x.o
+ .comment       0x00000000       0x31 drivers/bluetooth/rn487x/rn487x.o
  .text          0x00000000        0x0 drivers/bma253.o
  .data          0x00000000        0x0 drivers/bma253.o
  .bss           0x00000000        0x0 drivers/bma253.o
@@ -545,7 +551,8 @@ Address of section .data set to 0x803000
                 0x00004000                __RODATA_PM_OFFSET__ = 0x4000
 LOAD F:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATmega_DFP/1.6.364/gcc/dev/atmega3208/avrxmega3/crtatmega3208.o
 LOAD atmel_start.o
-LOAD drivers/ble.o
+LOAD drivers/bluetooth/ble.o
+LOAD drivers/bluetooth/rn487x/rn487x.o
 LOAD drivers/bma253.o
 LOAD drivers/mcp9844.o
 LOAD drivers/tempandhum.o
@@ -770,19 +777,19 @@ END GROUP
                 0x000000ce        0x6 atmel_start.o
                 0x000000ce                atmel_start_init
  .text.rn4870_get_response
-                0x000000d4        0x6 drivers/ble.o
+                0x000000d4        0x6 drivers/bluetooth/ble.o
  .text.rn4870_reboot
-                0x000000da       0x32 drivers/ble.o
+                0x000000da       0x32 drivers/bluetooth/ble.o
  .text.rn4870_send_command
-                0x0000010c       0x9a drivers/ble.o
+                0x0000010c       0x9a drivers/bluetooth/ble.o
  .text.rn4870_characteristic_get_data
-                0x000001a6       0x40 drivers/ble.o
+                0x000001a6       0x40 drivers/bluetooth/ble.o
  .text.rn4870_characteristic_send_data
-                0x000001e6       0x46 drivers/ble.o
+                0x000001e6       0x46 drivers/bluetooth/ble.o
  .text.rn4870_isr
-                0x0000022c       0x30 drivers/ble.o
+                0x0000022c       0x30 drivers/bluetooth/ble.o
  .text.rn4870_init
-                0x0000025c       0x90 drivers/ble.o
+                0x0000025c       0x90 drivers/bluetooth/ble.o
  .text.bma253_x_accel_data_ready
                 0x000002ec        0xc drivers/bma253.o
  .text.bma253_y_accel_data_ready
@@ -1130,10 +1137,10 @@ END GROUP
  *(.rodata)
  *(.rodata*)
  .rodata.str1.1
-                0x00006380      0x103 drivers/ble.o
+                0x00006380      0x103 drivers/bluetooth/ble.o
                                 0x108 (size before relaxing)
  .rodata.rn4870
-                0x00006483        0xe drivers/ble.o
+                0x00006483        0xe drivers/bluetooth/ble.o
                 0x00006483                rn4870
  .rodata.str1.1
                 0x00006491       0x16 drivers/bma253.o
@@ -1174,7 +1181,7 @@ END GROUP
                 0x0080303a                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.ble_wptr  0x0080303a        0x2 drivers/ble.o
+ .bss.ble_wptr  0x0080303a        0x2 drivers/bluetooth/ble.o
                 0x0080303a                ble_wptr
  .bss.print_accel
                 0x0080303c        0x1 main.o
@@ -1220,7 +1227,7 @@ END GROUP
  .bss.rx487x_rxbuf
                 0x0080327e        0x8 src/usart_basic.o
  *(COMMON)
- COMMON         0x00803286      0x180 drivers/ble.o
+ COMMON         0x00803286      0x180 drivers/bluetooth/ble.o
                 0x00803286                ble_rx_buff
                 0x00803386                ble_cmd_buff
  COMMON         0x00803406       0x13 drivers/tempandhum.o
@@ -1290,7 +1297,7 @@ END GROUP
  *(.comment)
  .comment       0x00000000       0x30 atmel_start.o
                                  0x31 (size before relaxing)
- .comment       0x00000030       0x31 drivers/ble.o
+ .comment       0x00000030       0x31 drivers/bluetooth/ble.o
  .comment       0x00000030       0x31 drivers/bma253.o
  .comment       0x00000030       0x31 drivers/mcp9844.o
  .comment       0x00000030       0x31 drivers/tempandhum.o
@@ -1339,7 +1346,7 @@ END GROUP
  .debug_aranges
                 0x00000000       0x20 atmel_start.o
  .debug_aranges
-                0x00000020       0x50 drivers/ble.o
+                0x00000020       0x50 drivers/bluetooth/ble.o
  .debug_aranges
                 0x00000070       0x40 drivers/bma253.o
  .debug_aranges
@@ -1376,7 +1383,7 @@ END GROUP
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000     0x229c F:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATmega_DFP/1.6.364/gcc/dev/atmega3208/avrxmega3/crtatmega3208.o
  .debug_info    0x0000229c       0xa1 atmel_start.o
- .debug_info    0x0000233d      0x826 drivers/ble.o
+ .debug_info    0x0000233d      0x826 drivers/bluetooth/ble.o
  .debug_info    0x00002b63      0x3f8 drivers/bma253.o
  .debug_info    0x00002f5b       0xef drivers/mcp9844.o
  .debug_info    0x0000304a      0x5a1 drivers/tempandhum.o
@@ -1396,7 +1403,7 @@ END GROUP
  *(.debug_abbrev)
  .debug_abbrev  0x00000000     0x20c2 F:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATmega_DFP/1.6.364/gcc/dev/atmega3208/avrxmega3/crtatmega3208.o
  .debug_abbrev  0x000020c2       0x63 atmel_start.o
- .debug_abbrev  0x00002125      0x2c6 drivers/ble.o
+ .debug_abbrev  0x00002125      0x2c6 drivers/bluetooth/ble.o
  .debug_abbrev  0x000023eb      0x190 drivers/bma253.o
  .debug_abbrev  0x0000257b       0x8b drivers/mcp9844.o
  .debug_abbrev  0x00002606      0x1a3 drivers/tempandhum.o
@@ -1412,30 +1419,30 @@ END GROUP
  .debug_abbrev  0x00003329       0x51 src/tca.o
  .debug_abbrev  0x0000337a      0x362 src/usart_basic.o
 
-.debug_line     0x00000000     0x2abc
+.debug_line     0x00000000     0x2adb
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x16f F:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATmega_DFP/1.6.364/gcc/dev/atmega3208/avrxmega3/crtatmega3208.o
  .debug_line    0x0000016f       0x60 atmel_start.o
- .debug_line    0x000001cf      0x3c5 drivers/ble.o
- .debug_line    0x00000594      0x22a drivers/bma253.o
- .debug_line    0x000007be       0xf4 drivers/mcp9844.o
- .debug_line    0x000008b2      0x2dd drivers/tempandhum.o
- .debug_line    0x00000b8f      0x393 main.o
- .debug_line    0x00000f22       0xa2 src/bod.o
- .debug_line    0x00000fc4       0xa6 src/clkctrl.o
- .debug_line    0x0000106a       0xa5 src/cpuint.o
- .debug_line    0x0000110f      0x3c3 src/driver_init.o
- .debug_line    0x000014d2      0x817 src/i2c_master.o
- .debug_line    0x00001ce9      0x528 src/i2c_simple_master.o
- .debug_line    0x00002211       0xa2 src/i2c_types.o
- .debug_line    0x000022b3      0x11c src/slpctrl.o
- .debug_line    0x000023cf       0xa2 src/tca.o
- .debug_line    0x00002471      0x64b src/usart_basic.o
+ .debug_line    0x000001cf      0x3cf drivers/bluetooth/ble.o
+ .debug_line    0x0000059e      0x22a drivers/bma253.o
+ .debug_line    0x000007c8       0xf4 drivers/mcp9844.o
+ .debug_line    0x000008bc      0x2dd drivers/tempandhum.o
+ .debug_line    0x00000b99      0x3a8 main.o
+ .debug_line    0x00000f41       0xa2 src/bod.o
+ .debug_line    0x00000fe3       0xa6 src/clkctrl.o
+ .debug_line    0x00001089       0xa5 src/cpuint.o
+ .debug_line    0x0000112e      0x3c3 src/driver_init.o
+ .debug_line    0x000014f1      0x817 src/i2c_master.o
+ .debug_line    0x00001d08      0x528 src/i2c_simple_master.o
+ .debug_line    0x00002230       0xa2 src/i2c_types.o
+ .debug_line    0x000022d2      0x11c src/slpctrl.o
+ .debug_line    0x000023ee       0xa2 src/tca.o
+ .debug_line    0x00002490      0x64b src/usart_basic.o
 
 .debug_frame    0x00000000      0xca0
  *(.debug_frame)
  .debug_frame   0x00000000       0x24 atmel_start.o
- .debug_frame   0x00000024      0x124 drivers/ble.o
+ .debug_frame   0x00000024      0x124 drivers/bluetooth/ble.o
  .debug_frame   0x00000148       0x9c drivers/bma253.o
  .debug_frame   0x000001e4       0x24 drivers/mcp9844.o
  .debug_frame   0x00000208       0xec drivers/tempandhum.o
@@ -1451,45 +1458,45 @@ END GROUP
  .debug_frame   0x00000938       0x24 src/tca.o
  .debug_frame   0x0000095c      0x344 src/usart_basic.o
 
-.debug_str      0x00000000     0x2781
+.debug_str      0x00000000     0x278b
  *(.debug_str)
  .debug_str     0x00000000      0xecd F:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATmega_DFP/1.6.364/gcc/dev/atmega3208/avrxmega3/crtatmega3208.o
  .debug_str     0x00000ecd      0x143 atmel_start.o
                                 0x17c (size before relaxing)
- .debug_str     0x00001010      0x228 drivers/ble.o
-                                0x3e6 (size before relaxing)
- .debug_str     0x00001238      0x133 drivers/bma253.o
+ .debug_str     0x00001010      0x232 drivers/bluetooth/ble.o
+                                0x3f0 (size before relaxing)
+ .debug_str     0x00001242      0x133 drivers/bma253.o
                                 0x2f6 (size before relaxing)
- .debug_str     0x0000136b       0x68 drivers/mcp9844.o
+ .debug_str     0x00001375       0x68 drivers/mcp9844.o
                                 0x1bf (size before relaxing)
- .debug_str     0x000013d3       0xb1 drivers/tempandhum.o
+ .debug_str     0x000013dd       0xb1 drivers/tempandhum.o
                                 0x2ce (size before relaxing)
- .debug_str     0x00001484       0xbe main.o
+ .debug_str     0x0000148e       0xbe main.o
                                 0x3f2 (size before relaxing)
- .debug_str     0x00001542       0x16 src/bod.o
+ .debug_str     0x0000154c       0x16 src/bod.o
                                 0x164 (size before relaxing)
- .debug_str     0x00001558       0x1e src/clkctrl.o
+ .debug_str     0x00001562       0x1e src/clkctrl.o
                                 0x16c (size before relaxing)
- .debug_str     0x00001576       0x1c src/cpuint.o
+ .debug_str     0x00001580       0x1c src/cpuint.o
                                 0x16a (size before relaxing)
- .debug_str     0x00001592      0x468 src/driver_init.o
+ .debug_str     0x0000159c      0x468 src/driver_init.o
                                 0x691 (size before relaxing)
- .debug_str     0x000019fa      0x6c9 src/i2c_master.o
+ .debug_str     0x00001a04      0x6c9 src/i2c_master.o
                                 0x98c (size before relaxing)
- .debug_str     0x000020c3       0xf1 src/i2c_simple_master.o
+ .debug_str     0x000020cd       0xf1 src/i2c_simple_master.o
                                 0x3ba (size before relaxing)
- .debug_str     0x000021b4       0x63 src/i2c_types.o
+ .debug_str     0x000021be       0x63 src/i2c_types.o
                                 0x1fa (size before relaxing)
- .debug_str     0x00002217       0xb0 src/slpctrl.o
+ .debug_str     0x00002221       0xb0 src/slpctrl.o
                                 0x230 (size before relaxing)
- .debug_str     0x000022c7        0xd src/tca.o
+ .debug_str     0x000022d1        0xd src/tca.o
                                 0x16d (size before relaxing)
- .debug_str     0x000022d4      0x4ad src/usart_basic.o
+ .debug_str     0x000022de      0x4ad src/usart_basic.o
                                 0x6ec (size before relaxing)
 
 .debug_loc      0x00000000     0x275b
  *(.debug_loc)
- .debug_loc     0x00000000      0x485 drivers/ble.o
+ .debug_loc     0x00000000      0x485 drivers/bluetooth/ble.o
  .debug_loc     0x00000485      0x1e6 drivers/bma253.o
  .debug_loc     0x0000066b       0xaf drivers/mcp9844.o
  .debug_loc     0x0000071a      0x500 drivers/tempandhum.o
@@ -1522,7 +1529,7 @@ END GROUP
 .debug_ranges   0x00000000      0x440
  *(.debug_ranges)
  .debug_ranges  0x00000000       0x10 atmel_start.o
- .debug_ranges  0x00000010       0x40 drivers/ble.o
+ .debug_ranges  0x00000010       0x40 drivers/bluetooth/ble.o
  .debug_ranges  0x00000050       0x30 drivers/bma253.o
  .debug_ranges  0x00000080       0x10 drivers/mcp9844.o
  .debug_ranges  0x00000090       0x28 drivers/tempandhum.o

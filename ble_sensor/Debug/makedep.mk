@@ -4,7 +4,9 @@
 
 atmel_start.c
 
-drivers\ble.c
+drivers\bluetooth\ble.c
+
+drivers\bluetooth\rn487x\rn487x.c
 
 drivers\bma253.c
 

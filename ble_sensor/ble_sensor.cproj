@@ -208,6 +208,8 @@
     <Folder Include="doxygen\" />
     <Folder Include="doxygen\generator\" />
     <Folder Include="drivers" />
+    <Folder Include="drivers\bluetooth" />
+    <Folder Include="drivers\bluetooth\rn487x" />
     <Folder Include="examples\" />
     <Folder Include="examples\include\" />
     <Folder Include="examples\src\" />
@@ -227,6 +229,7 @@
     <Folder Include="modules\twi\doc\" />
     <Folder Include="modules\usart\" />
     <Folder Include="modules\usart\doc\" />
+    <Folder Include="board" />
     <Folder Include="src\" />
     <Folder Include="utils\" />
     <Folder Include="utils\assembler\" />
@@ -238,16 +241,25 @@
     <Compile Include="atmel_start.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="board\board_config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Config\clock_config.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\RTE_Components.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="drivers\ble.c">
+    <Compile Include="drivers\bluetooth\ble.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="drivers\ble.h">
+    <Compile Include="drivers\bluetooth\ble.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="drivers\bluetooth\rn487x\rn487x.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="drivers\bluetooth\rn487x\rn487x.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="drivers\bma253.c">

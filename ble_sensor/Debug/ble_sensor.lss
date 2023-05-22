@@ -21,15 +21,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   8 .debug_abbrev 000036dc  00000000  00000000  00009da0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_line   00002abc  00000000  00000000  0000d47c  2**0
+  9 .debug_line   00002adb  00000000  00000000  0000d47c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_frame  00000ca0  00000000  00000000  0000ff38  2**2
+ 10 .debug_frame  00000ca0  00000000  00000000  0000ff58  2**2
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_str    00002781  00000000  00000000  00010bd8  2**0
+ 11 .debug_str    0000278b  00000000  00000000  00010bf8  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_loc    0000275b  00000000  00000000  00013359  2**0
+ 12 .debug_loc    0000275b  00000000  00000000  00013383  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_ranges 00000440  00000000  00000000  00015ab4  2**0
+ 13 .debug_ranges 00000440  00000000  00000000  00015ade  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -1482,8 +1482,8 @@ int main(void)
      940:	e0 40       	sbci	r30, 0x00	; 0
      942:	e1 f7       	brne	.-8      	; 0x93c <main+0x44>
      944:	00 c0       	rjmp	.+0      	; 0x946 <main+0x4e>
-		
-	while (1) {
+				/* this should be here */
+				
 				
 
 		_delay_ms(3000);
