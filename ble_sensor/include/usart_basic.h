@@ -40,8 +40,8 @@ extern "C" {
 
 /* rx487x Ringbuffer */
 
-#define rx487x_RX_BUFFER_SIZE 8
-#define rx487x_TX_BUFFER_SIZE 8
+#define rx487x_RX_BUFFER_SIZE 256
+#define rx487x_TX_BUFFER_SIZE 256
 #define rx487x_RX_BUFFER_MASK (rx487x_RX_BUFFER_SIZE - 1)
 #define rx487x_TX_BUFFER_MASK (rx487x_TX_BUFFER_SIZE - 1)
 

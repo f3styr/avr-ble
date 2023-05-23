@@ -99,8 +99,8 @@ drivers:
       ctrlc_udord: false
       dbgctrl_abmbp: false
       dbgctrl_dbgrun: false
-      driver_rx_buffer_size: '8'
-      driver_tx_buffer_size: '8'
+      driver_rx_buffer_size: '256'
+      driver_tx_buffer_size: '256'
       evctrl_irei: false
       printf_support: false
       rxplctrl_rxpl: 0
@@ -254,7 +254,7 @@ drivers:
     configuration:
       f_scl: 100000
       t_rise: 0
-      twi_advanced_config: false
+      twi_advanced_config: true
       twi_ctrla_fmpen: false
       twi_ctrla_sdahold: SDA hold time off
       twi_ctrla_sdasetup: SDA setup time is 4 clock cycles

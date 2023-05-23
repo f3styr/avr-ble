@@ -4,66 +4,6 @@
 #include <usart_basic.h>
 #include <util/delay.h>
 
-/*
-
-Indicate				0b00100000 Indicate value of characteristic with acknowledgment from server to client
-Notify					0b00010000 Notify value of characteristic without acknowledgment from server to client
-Write					0b00001000 Write value of characteristic with acknowledgment from client to server
-Write without response	0b00000100 Write value of characteristic without acknowledgment from client to server	
-Read					0b00000010 Read value of characteristic. Value is sent from server to client
-				//		0b00011010 = 10
-*/
-
-// constants
-#define BLE_RX_BUFF_SIZE (256)
-#define BLE_RX_BUFF_MASK (BLE_RX_BUFF_SIZE - 1)
-
-#define BLE_CMD_BUFF_SIZE (128)
-
-#define BLE_RESET_DELAY (10)
-#define BLE_STARTUP_TIME (300)
-#define BLE_DELAY_BETWEEN_COMMANDS (300)
-
-#define BLE_RESPONSE_ERR "Err"
-
-// commands
-#define BLE_CMD_LIST_ACTIVE_SERVICES "LS\r\n"
-#define BLE_CMD_ENTER_CMD_MODE "$$$"
-#define BLE_CMD_FACTORY_RESET "SF,2\r\n"
-
-// functions
-#define BLE_CMD_FN_SET_BT_NAME "S-,AVRBLE\r\n"
-#define BLE_CMD_FN_SET_DEV_NAME "SN,AVRBLE\r\n"
-
-
-// services
-#define BLE_CMD_FN_REGISTER_SERVICE_TEMP			     "PS,2A981F4C744841F883E88BF97FE46381\r\n"
-#define BLE_CMD_FN_REGISTER_CHARACTERISTIC_TEMP_READ     "PC,73657BD82D044C31A31E54DE1DAB66FF,02,10\r\n"
-
-#define BLE_CMD_FN_REGISTER_CHARACTERISTIC_HUMIDITY_READ "PC,D0A512D60D8145C2BEDD621EF1CBBEFB,02,10\r\n"
-
-// handles
-#define BLE_HANDLE_TEMP_READ_CHARACTERISTIC "0072"
-#define BLE_HANDLE_HUMIDITY_READ_CHARACTERISTIC "0074"
-
-typedef struct
-{
-	void (*init)(void);
-	void (*usart_interrupt_routine)(void);
-	bool (*send_command)(const uint8_t*);
-	void (*characteristic_send_data)(const uint8_t*, const int16_t);
-	int16_t (*characteristic_get_data)(const uint8_t*);
-	uint8_t* (*get_response)(void);
-	void (*reboot)(void);
-	
-}ble_ascii_interface;
-
-extern const ble_ascii_interface rn4870;
-
-#endif
-
-
-
 typedef enum {
 	BLE_APPEARANCE_UNKNOWN = 0, BLE_APPEARANCE_GENERIC_PHONE = 64, 
 	BLE_APPEARANCE_GENERIC_COMPUTER = 128, BLE_APPEARANCE_GENERIC_WATCH = 192,
@@ -93,18 +33,24 @@ typedef enum {
 } ble_gap_appearance_t;
 
 
+/** Characteristic properties
+
+*/
 typedef enum  {
-	BROADCAST = (1), // Not supported in RN4870.
-	READ = (1 << 1),
-	WRITE_WITHOUT_RESPONSE = (1 << 2),
-	WRITE = (1 << 3),
-	NOTIFY = (1 << 4),
-	INDICATE = (1 << 5),
-	AUTHENTICATED_WRITE = (1 << 6),
-	EXTENDED_PROP = (1 << 7), // Not supported in RN4870.	
+	BLE_PROP_FLAG_BROADCAST = (1), /**< Not supported in RN4870 */
+	BLE_PROP_FLAG_READ = (1 << 1),
+	BLE_PROP_FLAG_WRITE_WITHOUT_RESPONSE = (1 << 2),
+	BLE_PROP_FLAG_WRITE = (1 << 3),
+	BLE_PROP_FLAG_NOTIFY = (1 << 4),
+	BLE_PROP_FLAG_INDICATE = (1 << 5),
+	BLE_PROP_FLAG_AUTHENTICATED_WRITE = (1 << 6),
+	BLE_PROP_FLAG_EXTENDED_PROP = (1 << 7), /**< Not supported in RN4870 */
 						  
 } ble_characteristic_prop_flag_t;
 
+/** BLE I/O capabilities
+
+*/
 typedef enum {
       IO_CAPS_DISPLAY_ONLY     = 0x00,   /**< Display Only. */
       IO_CAPS_DISPLAY_YESNO    = 0x01,   /**< Display and Yes/No entry. */
@@ -135,29 +81,36 @@ enum {
 	    UUID_TX_POWER_SERVICE               = 0x1804
 };
 
+/** Advertising mode
 
+*/
 typedef enum {
-	NON_CONNECTABLE_UNDIRECTED,
+	NON_CONNECTABLE_UNDIRECTED, 
 	CONNECTABLE_DIRECTED,
 	CONNECTABLE_UNDIRECTED,
 	SCANNABLE_UNDIRECTED,
 	
 } ble_gap_advertising_t;
 
-typedef uint8_t ble_error_t;
+typedef enum  {
+	BLE_FAIL,
+	BLE_NOERR,	
+} ble_error_t;
 
 struct gatt_characteristic {
-	uint8_t		UUID[32];
-	uint16_t	handle;
+	uint8_t*	UUID;
+	uint16_t	handle; 
 	uint8_t		properties;
-	uint8_t		value;
+	uint8_t*	data;  /**< Last read data */
+	uint8_t		data_len; /**< Data length in octets. */
 };
 
 struct gatt_service {
-	uint8_t					UUID[32];
-	uint16_t				handle;
-	gatt_characteristic*	characteristics;
+	uint8_t*				UUID;
+	uint16_t				handle; 
 	uint16_t				characteristics_count;
+
+	struct gatt_characteristic	*(*characteristics)[];	
 };
 
 
@@ -166,66 +119,85 @@ struct ble_connection {
 };
 
 struct ble_server {
-
-	uint8_t* address;
-	uint8_t* device_name;
-	gatt_service* services;
-	ble_connection* connections;
 	
-	//main_loop
-	struct ble_sys_ops			sys_ops;
-	struct ble_gatt_ops			gatt_ops;
-	struct ble_gap_ops			gap_ops;
-				
-	void (*cb_isr)(void);
-	void (*main_loop)(void);
+	
+	uint8_t*					address; 
+	uint8_t*					device_name;
+	
+	bool						enable_bonding;
+	ble_io_capabilities_t		io_capabilities;
+	uint8_t*					passkey;
+	
+	ble_gap_appearance_t		advertisement_appearance;
+	ble_gap_advertising_t		advertisment_type;
+	uint16_t					advertisement_interval;	
+	uint16_t					advertisement_timeout;
+	
+	uint8_t						services_count;
 
+	struct gatt_service			*(*services)[];				
+	struct ble_connection*		connections;
+
+	struct ble_sys_ops*			sys;
+	struct ble_gatt_ops*		gatt;
+	struct ble_gap_ops*			gap;
+	struct ble_events*			events;
+	
+	void (*init)(struct ble_server* ctx);
+	void (*probe)(struct ble_server* ctx);
+	
+	void (*main_loop)(struct ble_server* ctx);
+};
+
+struct ble_events {
+	
+	void (*cb_on_timeout)(void);
+	void (*cb_on_connection)(void);
+	void (*cb_on_disconnect)(void);	
+	
 };
 
 struct ble_sys_ops {
-	ble_error_t (*power_off)(void);
-	ble_error_t (*power_on)(void);
-	ble_error_t (*reboot)(void);
-	ble_error_t (*factory_reset)(void);
+	ble_error_t (*shutdown)(struct ble_server* ctx);
+	ble_error_t (*reboot)(struct ble_server* ctx);
+	ble_error_t (*factory_reset)(struct ble_server* ctx);
 };
 
 
 struct ble_gatt_ops {
-		
-	gatt_service			(*add_service)(uint8_t* uuid);
-	gatt_characteristic		(*add_characteristic)(gatt_service* service,  uint8_t* uuid, uint8_t properties);
-	ble_error_t				(*read_value)(gatt_characteristic* characteristic);
-	ble_error_t				(*write_value)(gatt_characteristic* characteristic, int16_t value);	
+
+	ble_error_t (*init)(struct ble_server* ctx);			
+	ble_error_t	(*register_service)(struct gatt_service* service);
+	ble_error_t	(*register_characteristic)(struct gatt_characteristic* characteristic);
+	ble_error_t	(*read_value)(struct  gatt_characteristic* characteristic);
+	ble_error_t	(*write_value)(struct gatt_characteristic* characteristic, const uint8_t payload[]);	
 };
 
 struct ble_gap_ops {
-		
-	ble_error_t (*set_address)(uint8_t* address);
-	ble_error_t (*set_device_name)(uint8_t* name);
-	ble_error_t (*set_appearance)(ble_gap_appearance_t appearance);	
-	ble_error_t (*set_advertising_mode)(ble_gap_advertising_t atype);
-	ble_error_t (*set_advertising_interval)(uint16_t interval);	
-	ble_error_t (*set_advertising_timeout)(uint16_t timeout);	
-	ble_error_t (*start_advertising)(void);	
-	ble_error_t (*stop_advertising)(void);	
-	ble_error_t (*start_scan)(void);	
-	ble_error_t (*stop_scan)(void);	
-	ble_error_t (*kill_connection)(void);
-	ble_error_t (*set_security)(bool enable_bonding, 
-								ble_io_capabilities_t io_capabilities, 
-								uint8_t* passkey);
 	
-	// callbacks
-	void (*cb_on_timeout)(void);	
-	void (*cb_on_connection)(void);	
-	void (*cb_on_disconnect)(void);
+	ble_error_t (*init)(struct ble_server* ctx);	
+	ble_error_t (*set_address)(struct ble_server* ctx, const uint8_t* address);
+	ble_error_t (*set_device_name)(struct ble_server* ctx, const uint8_t* name);
+	ble_error_t (*set_appearance)(struct ble_server* ctx, const ble_gap_appearance_t appearance);	
+	ble_error_t (*set_advertising_mode)(struct ble_server* ctx, const ble_gap_advertising_t atype);
+	ble_error_t (*set_advertising_interval)(struct ble_server* ctx, const uint16_t interval);	
+	ble_error_t (*set_advertising_timeout)(struct ble_server* ctx, const  uint16_t timeout);	
+	ble_error_t (*start_advertising)(struct ble_server* ctx);	
+	ble_error_t (*stop_advertising)(struct ble_server* ctx);	
+	ble_error_t (*kill_connection)(struct ble_server* ctx);
+	ble_error_t (*set_security)(struct ble_server* ctx,
+								const bool enable_bonding, 
+								const ble_io_capabilities_t io_capabilities, 
+								const uint8_t* passkey);
 	
+
+
 };	
 	
 	
-	
+#endif
 
-*/
+
 
 
 /*	

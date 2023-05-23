@@ -74,7 +74,7 @@
           <AcmeProjectActionInfo Action="File" Source="include/slpctrl.h" IsConfig="false" Hash="RmK0UGftfBRePkRJ8R5ifw" />
           <AcmeProjectActionInfo Action="File" Source="include/system.h" IsConfig="false" Hash="gRp0W4BvirKsaqDJFNTyQw" />
           <AcmeProjectActionInfo Action="File" Source="include/tca.h" IsConfig="false" Hash="aVTcjZsqHdLwwdLzndydzQ" />
-          <AcmeProjectActionInfo Action="File" Source="include/usart_basic.h" IsConfig="false" Hash="CfSp6d4SV9W6Btmw9wdygQ" />
+          <AcmeProjectActionInfo Action="File" Source="include/usart_basic.h" IsConfig="false" Hash="8T1n33z4ohWvU4nnGqiWVg" />
           <AcmeProjectActionInfo Action="File" Source="src/bod.c" IsConfig="false" Hash="RcfdUegRSFfgBJb87SJpvA" />
           <AcmeProjectActionInfo Action="File" Source="src/clkctrl.c" IsConfig="false" Hash="55XMEfZH22IRnTPJdj1NlA" />
           <AcmeProjectActionInfo Action="File" Source="src/cpuint.c" IsConfig="false" Hash="8QNlbJZ6R6wBiCT5nh902g" />
@@ -210,6 +210,7 @@
     <Folder Include="drivers" />
     <Folder Include="drivers\bluetooth" />
     <Folder Include="drivers\bluetooth\rn487x" />
+    <Folder Include="board" />
     <Folder Include="examples\" />
     <Folder Include="examples\include\" />
     <Folder Include="examples\src\" />
@@ -229,7 +230,6 @@
     <Folder Include="modules\twi\doc\" />
     <Folder Include="modules\usart\" />
     <Folder Include="modules\usart\doc\" />
-    <Folder Include="board" />
     <Folder Include="src\" />
     <Folder Include="utils\" />
     <Folder Include="utils\assembler\" />
@@ -248,9 +248,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\RTE_Components.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="drivers\bluetooth\ble.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="drivers\bluetooth\ble.h">
