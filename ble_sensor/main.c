@@ -43,7 +43,7 @@ int main(void)
 	
 	rn487x.gatt->write_value(&temp_read_characteristic, data);
 	rn487x.gatt->write_value(&temp_read_characteristic, data);
-	rn487x.gatt->read_value(&temp_read_characteristic);
+	rn487x.gatt->read_value(&temp_read_characteristic, data);
 
 	while(1) {
 

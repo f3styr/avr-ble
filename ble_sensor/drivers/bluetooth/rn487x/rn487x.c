@@ -9,6 +9,10 @@
 #define RN487X_RX_BUFF_MASK (RN487X_RX_BUFF_SIZE - 1)
 
 
+#define RN487X_CMD_BUFF_SIZE 256
+
+
+
 #define RN487X_RESET_DELAY (10)
 #define RN487X_STARTUP_TIME (300)
 #define RN487X_DELAY_WAIT_FOR_RESPONSE (300)
@@ -25,6 +29,8 @@
 static volatile uint8_t rn487x_rx_buff[RN487X_RX_BUFF_SIZE];
 static volatile size_t rx_wptr = 0;
 
+static volatile uint8_t rn487x_cmd_buff_a[RN487X_CMD_BUFF_SIZE];
+static volatile uint8_t rn487x_cmd_buff_b[RN487X_CMD_BUFF_SIZE];
 
 
 static struct ble_sys_ops rn487x_sys_ops;
@@ -119,55 +125,55 @@ static struct ble_sys_ops rn487x_sys_ops = {
 
 static ble_error_t rn487x_register_service(struct gatt_service* service)
 {
-	uint8_t buff[50];
-	sprintf(buff, "PS,%s\r\n", service->UUID);
-	rn487x_send_ascii_command(buff);
+	sprintf(rn487x_cmd_buff_a, "PS,%s\r\n", service->UUID);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
 	return rn487x_get_err_from_response();
 }
 
 static ble_error_t rn487x_register_characteristic(struct gatt_characteristic* characteristic)
 {
-	uint8_t buff[50];
-	sprintf(buff, "PC,%s,%02X,%02X\r\n", characteristic->UUID, characteristic->properties, characteristic->data_len);
-	rn487x_send_ascii_command(buff);
+	sprintf(rn487x_cmd_buff_a, "PC,%s,%02X,%02X\r\n", characteristic->UUID, characteristic->properties, characteristic->data_len);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
 	return rn487x_get_err_from_response();
 }
 
-static ble_error_t rn487x_read_value(struct gatt_characteristic* characteristic)
+static ble_error_t rn487x_read_value(struct gatt_characteristic* characteristic, uint8_t destination[])
 {
-	uint8_t data[(characteristic->data_len * 2 ) + 1];
-	sprintf(data, "SHR,%04X\r\n", characteristic->handle);
-	rn487x_send_ascii_command(data);
+	sprintf(rn487x_cmd_buff_a, "SHR,%04X\r\n", characteristic->handle);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
 	
 	if(rn487x_get_err_from_response())
 	{
-		strncpy(characteristic->data, (rn487x_rx_buff + 5), (characteristic->data_len * 2));
-		characteristic->data[characteristic->data_len * 2] = '\0';
+		strncpy(rn487x_cmd_buff_a, (rn487x_rx_buff + 5), (characteristic->data_len * 2));
+		uint8_t *pos = 	rn487x_cmd_buff_a;
+
+		for (short i = 0; i < characteristic->data_len; i++) 
+		{
+			sscanf(pos, "%2hhX", &destination[i]);
+			pos = pos + 2;
+		}
+
 	}
 	else
 	{
 		return BLE_FAIL;
 	}
 
-
 }
 
 static ble_error_t rn487x_write_value(struct gatt_characteristic* characteristic, const uint8_t payload[])
 {
-
-	uint8_t hexcode[(characteristic->data_len * 2 ) + 1];
-	uint8_t cmd[(characteristic->data_len * 2 ) + 10];
-
-	char *ptr = &hexcode[0];
+	char *ptr = &rn487x_cmd_buff_b[0];
 
 	int i;
 
-	for (i = 0; i < characteristic->data_len; i++) {
+	for (i = 0; i < characteristic->data_len; i++) 
+	{
 		ptr += sprintf(ptr, "%02X", payload[i]);
 	}
 
-	sprintf(cmd, "SHW,%04X,%s\r\n", characteristic->handle, hexcode);
-	rn487x_send_ascii_command(cmd);
+	sprintf(rn487x_cmd_buff_a, "SHW,%04X,%s\r\n", characteristic->handle, rn487x_cmd_buff_b);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
 }
 
 static ble_error_t rn487x_gatt_init(struct ble_server* ctx)
@@ -204,9 +210,6 @@ static ble_error_t rn487x_gatt_init(struct ble_server* ctx)
 				//uint8_t* endptr;
 				characteristic->handle = strtol(res, NULL, 16);
 
-				//allocate data
-				characteristic->data = (uint8_t*)malloc((characteristic->data_len * 2 + 1 ) * sizeof(uint8_t));
-
 				#ifdef PRINT_DEBUG_MSG
 				printf("Registered characteristic %s, with handle %04X\r\n", characteristic->UUID, characteristic->handle);
 				#endif
@@ -230,7 +233,6 @@ static struct ble_gatt_ops rn487x_gatt_ops = {
 	.write_value = rn487x_write_value,
 	.init = rn487x_gatt_init,
 };
-
 
 static struct ble_gap_ops rn487x_gap_ops = {
 

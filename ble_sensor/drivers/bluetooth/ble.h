@@ -101,7 +101,6 @@ struct gatt_characteristic {
 	uint8_t*	UUID;
 	uint16_t	handle; 
 	uint8_t		properties;
-	uint8_t*	data;  /**< Last read data */
 	uint8_t		data_len; /**< Data length in octets. */
 };
 
@@ -109,7 +108,6 @@ struct gatt_service {
 	uint8_t*				UUID;
 	uint16_t				handle; 
 	uint16_t				characteristics_count;
-
 	struct gatt_characteristic	*(*characteristics)[];	
 };
 
@@ -169,7 +167,7 @@ struct ble_gatt_ops {
 	ble_error_t (*init)(struct ble_server* ctx);			
 	ble_error_t	(*register_service)(struct gatt_service* service);
 	ble_error_t	(*register_characteristic)(struct gatt_characteristic* characteristic);
-	ble_error_t	(*read_value)(struct  gatt_characteristic* characteristic);
+	ble_error_t	(*read_value)(struct  gatt_characteristic* characteristic, uint8_t destination[]);
 	ble_error_t	(*write_value)(struct gatt_characteristic* characteristic, const uint8_t payload[]);	
 };
 
