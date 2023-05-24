@@ -81,16 +81,6 @@ enum {
 	    UUID_TX_POWER_SERVICE               = 0x1804
 };
 
-/** Advertising mode
-
-*/
-typedef enum {
-	NON_CONNECTABLE_UNDIRECTED, 
-	CONNECTABLE_DIRECTED,
-	CONNECTABLE_UNDIRECTED,
-	SCANNABLE_UNDIRECTED,
-	
-} ble_gap_advertising_t;
 
 typedef enum  {
 	BLE_FAIL,
@@ -112,30 +102,32 @@ struct gatt_service {
 };
 
 
-struct ble_connection {
-	uint8_t* address;
-};
-
-struct ble_server {
-	
-	
-	uint8_t*					address; 
+struct ble_server_config 
+{
+	uint8_t*					address;
 	uint8_t*					device_name;
 	
-	bool						enable_bonding;
 	ble_io_capabilities_t		io_capabilities;
 	uint8_t*					passkey;
 	
 	ble_gap_appearance_t		advertisement_appearance;
-	ble_gap_advertising_t		advertisment_type;
-	uint16_t					advertisement_interval;	
-	uint16_t					advertisement_timeout;
-	
+
+	uint16_t					connection_min_interval;
+	uint16_t					connection_max_interval;
+	uint16_t					connection_latency;
+	uint16_t					connection_timeout;
+
 	uint8_t						services_count;
+	struct gatt_service			*(*services)[];
 
-	struct gatt_service			*(*services)[];				
-	struct ble_connection*		connections;
+};
 
+
+
+
+struct ble_server {
+				
+	struct ble_server_config*	config;
 	struct ble_sys_ops*			sys;
 	struct ble_gatt_ops*		gatt;
 	struct ble_gap_ops*			gap;
@@ -143,150 +135,42 @@ struct ble_server {
 	
 	void (*init)(struct ble_server* ctx);
 	void (*probe)(struct ble_server* ctx);
-	
 	void (*main_loop)(struct ble_server* ctx);
 };
 
 struct ble_events {
 	
-	void (*cb_on_timeout)(void);
-	void (*cb_on_connection)(void);
-	void (*cb_on_disconnect)(void);	
-	
+	void (*cb_on_new_connection)(void);
+	void (*cb_on_disconnect)(void);
+
 };
 
 struct ble_sys_ops {
+
 	ble_error_t (*shutdown)(struct ble_server* ctx);
 	ble_error_t (*reboot)(struct ble_server* ctx);
 	ble_error_t (*factory_reset)(struct ble_server* ctx);
 };
 
-
 struct ble_gatt_ops {
 
-	ble_error_t (*init)(struct ble_server* ctx);			
-	ble_error_t	(*register_service)(struct gatt_service* service);
-	ble_error_t	(*register_characteristic)(struct gatt_characteristic* characteristic);
-	ble_error_t	(*read_value)(struct  gatt_characteristic* characteristic, uint8_t destination[]);
+	ble_error_t	(*read_value)(struct gatt_characteristic* characteristic, uint8_t destination[]);
 	ble_error_t	(*write_value)(struct gatt_characteristic* characteristic, const uint8_t payload[]);	
 };
 
 struct ble_gap_ops {
 	
-	ble_error_t (*init)(struct ble_server* ctx);	
-	ble_error_t (*set_address)(struct ble_server* ctx, const uint8_t* address);
-	ble_error_t (*set_device_name)(struct ble_server* ctx, const uint8_t* name);
-	ble_error_t (*set_appearance)(struct ble_server* ctx, const ble_gap_appearance_t appearance);	
-	ble_error_t (*set_advertising_mode)(struct ble_server* ctx, const ble_gap_advertising_t atype);
-	ble_error_t (*set_advertising_interval)(struct ble_server* ctx, const uint16_t interval);	
-	ble_error_t (*set_advertising_timeout)(struct ble_server* ctx, const  uint16_t timeout);	
+	// get connected devices
+	// start/stop advertising
+	// kick/ban device
+	// on device connected
+	// 
 	ble_error_t (*start_advertising)(struct ble_server* ctx);	
 	ble_error_t (*stop_advertising)(struct ble_server* ctx);	
 	ble_error_t (*kill_connection)(struct ble_server* ctx);
-	ble_error_t (*set_security)(struct ble_server* ctx,
-								const bool enable_bonding, 
-								const ble_io_capabilities_t io_capabilities, 
-								const uint8_t* passkey);
 	
-
 
 };	
 	
 	
 #endif
-
-
-
-
-/*	
-	
-	ble_error_t (*set_advertisment_tx_power)(int8_t power);
-	ble_error_t (*set_connected_tx_power)(int8_t power);
-	
-	
-	ble_error_t (*set_device_information) ( uint8_t* hardware_version, 
-											uint8_t* model_name,
-											uint8_t* manufacturer_name,
-											uint8_t* software_revision,											uint8_t* serial_number);
-*/
-
-																			
-
-
-/*
-static struct ble_t rn487x_handle = {
-	main_loop = rn487x_main_loop
-	struct sys_ops
-};
-
-
-struct ble_t *rn487x_probe()
-
-{
-	return&rn487x_handle;
-}
-
-static void rn487x_main_loop(void)
-{
-	
-}
-*/
-
-/*
-struct sys_ops {
-	reboot
-	reset
-	power on
-	power off	
-};
-
-struct ble_t{
-	main_loop
-	struct sys_ops
-};
-
-struct ble_t *ble = NULL;
-
-static ble_err_handler();
-
-void bluetooth_init(void)
-{
-	ble = rn4870_probe();
-	
-	if(!ble)
-	{
-		return err
-	}
-	
-	ble->register_characteristic();
-	ble->get_characteristics();
-	
-	
-	ble->err_handler() = ble_err_heander
-	ble->pairing_request = ble_pairing_handler
-	ble->characteristic_data = ble_char_data
-}
-
-void bluetooth_main_loop(void)
-{
-	if(ble_main_loop != NULL)
-		ble->main_loop();
-}
-
-void ble_pairing_handler(.....)
-{
-	tl_packet packet = {
-		,
-		,
-		,
-		
-	}
-	
-	tl_add_packet(&packet);
-};
-
-void bluetooth_register_characteristic(.....)
-{
-	
-}
-*/

@@ -3,15 +3,13 @@
 
 #define PRINT_DEBUG_MSG
 
-
 #define RN487X_RX_BUFF_SIZE  256
-
 #define RN487X_RX_BUFF_MASK (RN487X_RX_BUFF_SIZE - 1)
-
 
 #define RN487X_CMD_BUFF_SIZE 256
 
 
+#define RN487X_USB_CDC_BUFF_SIZE 128
 
 #define RN487X_RESET_DELAY (10)
 #define RN487X_STARTUP_TIME (300)
@@ -24,34 +22,56 @@
 #define RN487X_TEMP_READ_CHARACTERISTIC_UUID "73657BD82D044C31A31E54DE1DAB66FF"
 #define RN487X_HUM_READ_CHARACTERISTIC_UUID "D0A512D60D8145C2BEDD621EF1CBBEFB"
 
+
+
 #define RN487X_RESPONSE_ERR "Err"
+
+#define MAC_ADDRESS_BYTE_LEN 6
 
 static volatile uint8_t rn487x_rx_buff[RN487X_RX_BUFF_SIZE];
 static volatile size_t rx_wptr = 0;
 
+static volatile uint8_t rn487x_usb_rx_buff[RN487X_USB_CDC_BUFF_SIZE];
+static volatile size_t usb_rx_wptr = 0;
+
 static volatile uint8_t rn487x_cmd_buff_a[RN487X_CMD_BUFF_SIZE];
 static volatile uint8_t rn487x_cmd_buff_b[RN487X_CMD_BUFF_SIZE];
+
+
 
 
 static struct ble_sys_ops rn487x_sys_ops;
 static struct ble_gatt_ops rn487x_gatt_ops;
 static struct ble_gap_ops rn487x_gap_ops;
 
-
-
 static void rn487x_clear_rx_buff(void);
 static void rn487x_init(struct ble_server*);
 static void rn487x_probe(void);
 static void rn487x_cb_isr(void);
+static void rn487x_usb_cdc_isr(void);
+static void rn487x_main_loop(struct ble_server*);
+
+ble_error_t rn487x_gatt_init(struct ble_server* ctx);
+ble_error_t rn487x_register_service(struct gatt_service*);
+ble_error_t rn487x_register_characteristic(struct gatt_characteristic*);
+ble_error_t rn487x_gatt_init(struct ble_server*);
+
+ble_error_t rn487x_gap_init(struct ble_server* ctx);
+ble_error_t rn487x_set_address(struct ble_server* ctx, const uint8_t*);
+ble_error_t rn487x_set_device_name(struct ble_server*, const uint8_t*);
+ble_error_t rn487x_set_appearance(struct ble_server* ctx, const ble_gap_appearance_t);
+ble_error_t rn487x_set_connection_params(struct ble_server*,
+												const uint16_t,
+												const uint16_t,
+												const uint16_t,
+												const uint16_t);
 
 static ble_error_t rn487x_get_err_from_response();
-
 
 static struct gatt_service *rn487x_services[] = {&temp_and_hum_service};
 
 static struct gatt_characteristic *temp_and_hum_characteristics[] = 
 	{&temp_read_characteristic, &humidity_read_characteristic};
-
 
 struct gatt_characteristic temp_read_characteristic = {
 	.UUID = RN487X_TEMP_READ_CHARACTERISTIC_UUID,
@@ -71,25 +91,67 @@ struct gatt_service temp_and_hum_service = {
 	.characteristics_count = 2,
 };
 
-struct ble_server rn487x = {
+struct ble_server_config rn487x_config = {
 	.device_name = "rn4870",
-	.enable_bonding = false,
 	.io_capabilities = IO_CAPS_KEYBOARD_DISPLAY,
 	.passkey = "123456",
 	.advertisement_appearance = BLE_APPEARANCE_UNKNOWN,
-	.advertisment_type = CONNECTABLE_UNDIRECTED,
-	.advertisement_interval = 0x0020,
-	.advertisement_timeout = 0x0003,
+	.connection_min_interval = 0x0006,
+	.connection_max_interval = 0x0000,
+	.connection_latency = 0x0200,
+	.connection_timeout = 0x0000,
 	.services_count = 1,
-	.services = &rn487x_services,
+	.services = &rn487x_services
+};
+
+struct ble_server rn487x = {
+
+	.config = &rn487x_config,
 	.sys = &rn487x_sys_ops,
 	.gatt = &rn487x_gatt_ops,
 	.gap = &rn487x_gap_ops,
 	
 	.init = rn487x_init,
+	.main_loop = rn487x_main_loop,
 	//.probe = rn487x_probe,
 	
 };
+
+static void rn487x_main_loop(struct ble_server* ctx)
+{
+	// enter pressed
+	if(usb_rx_wptr > 0 && rn487x_usb_rx_buff[usb_rx_wptr-1] == 13) 
+	{
+		rn487x_usb_rx_buff[usb_rx_wptr] = '\n';
+		rn487x_usb_rx_buff[usb_rx_wptr+1] = '\0';
+
+		// send cmd
+		rn487x_send_ascii_command(rn487x_usb_rx_buff);
+
+		// reset buffer
+		memset(rn487x_usb_rx_buff, NULL, RN487X_USB_CDC_BUFF_SIZE);
+		usb_rx_wptr = 0;
+	}
+}
+
+static void rn487x_init(struct ble_server* ctx)
+{
+
+	#ifdef PRINT_DEBUG_MSG
+	printf("\r\nInitializing rn487x\r\n");
+	#endif
+
+	rx487x_set_ISR_cb(rn487x_cb_isr, RX_CB);
+	usb_cdc_set_ISR_cb(rn487x_usb_cdc_isr, RX_CB);
+
+	ctx->sys->reboot(ctx);
+	ctx->sys->factory_reset(ctx);
+
+	rn487x_gap_init(ctx);
+	rn487x_gatt_init(ctx);
+}
+
+/* SYS OPS */
 
 static ble_error_t rx487x_shutdown(struct ble_server* ctx) 
 {
@@ -123,21 +185,9 @@ static struct ble_sys_ops rn487x_sys_ops = {
 	
 };
 
-static ble_error_t rn487x_register_service(struct gatt_service* service)
-{
-	sprintf(rn487x_cmd_buff_a, "PS,%s\r\n", service->UUID);
-	rn487x_send_ascii_command(rn487x_cmd_buff_a);
-	return rn487x_get_err_from_response();
-}
+/* GATT OPS */
 
-static ble_error_t rn487x_register_characteristic(struct gatt_characteristic* characteristic)
-{
-	sprintf(rn487x_cmd_buff_a, "PC,%s,%02X,%02X\r\n", characteristic->UUID, characteristic->properties, characteristic->data_len);
-	rn487x_send_ascii_command(rn487x_cmd_buff_a);
-	return rn487x_get_err_from_response();
-}
-
-static ble_error_t rn487x_read_value(struct gatt_characteristic* characteristic, uint8_t destination[])
+ble_error_t rn487x_read_value(struct gatt_characteristic* characteristic, uint8_t destination[])
 {
 	sprintf(rn487x_cmd_buff_a, "SHR,%04X\r\n", characteristic->handle);
 	rn487x_send_ascii_command(rn487x_cmd_buff_a);
@@ -161,7 +211,7 @@ static ble_error_t rn487x_read_value(struct gatt_characteristic* characteristic,
 
 }
 
-static ble_error_t rn487x_write_value(struct gatt_characteristic* characteristic, const uint8_t payload[])
+ble_error_t rn487x_write_value(struct gatt_characteristic* characteristic, const uint8_t payload[])
 {
 	char *ptr = &rn487x_cmd_buff_b[0];
 
@@ -176,16 +226,46 @@ static ble_error_t rn487x_write_value(struct gatt_characteristic* characteristic
 	rn487x_send_ascii_command(rn487x_cmd_buff_a);
 }
 
-static ble_error_t rn487x_gatt_init(struct ble_server* ctx)
+static struct ble_gatt_ops rn487x_gatt_ops = {
+	.read_value = rn487x_read_value,
+	.write_value = rn487x_write_value,
+};
+
+/* GAP OPS */
+
+ble_error_t rn487x_start_advertising(struct ble_server* ctx)
+{
+	rn487x_send_ascii_command("A\r\n");
+}
+
+ble_error_t rn487x_stop_advertising(struct ble_server* ctx)
+{
+	rn487x_send_ascii_command("Y\r\n");
+}
+
+ble_error_t rn487x_kill_connection(struct ble_server* ctx)
+{
+	rn487x_send_ascii_command("K,1\r\n");
+}
+
+static struct ble_gap_ops rn487x_gap_ops = {					
+	.start_advertising = rn487x_start_advertising,
+	.stop_advertising = rn487x_stop_advertising,
+	.kill_connection = rn487x_kill_connection,
+};
+
+/* Helper GATT Functions */
+
+ble_error_t rn487x_gatt_init(struct ble_server* ctx)
 {
 	// register services and characteristics
-	struct gatt_service	*(*services)[]	= ctx->services;
+	struct gatt_service	*(*services)[]	= ctx->config->services;
 
-	for(short i = 0; i < ctx->services_count; i++)
+	for(short i = 0; i < ctx->config->services_count; i++)
 	{
 		struct gatt_service* service = (*services)[i];
-	
-		ctx->gatt->register_service(service);
+		
+		rn487x_register_service(service);
 
 		struct gatt_characteristic *(*characteristics)[] = service->characteristics;
 
@@ -193,7 +273,7 @@ static ble_error_t rn487x_gatt_init(struct ble_server* ctx)
 		{
 			struct gatt_characteristic* characteristic = (*characteristics)[j];
 
-			if(ctx->gatt->register_characteristic(characteristic))
+			if(rn487x_register_characteristic(characteristic))
 			{
 				uint8_t buff[50];
 				uint8_t* res;
@@ -206,14 +286,14 @@ static ble_error_t rn487x_gatt_init(struct ble_server* ctx)
 				// XXXX...X,0000,00
 				res = strstr(rn487x_rx_buff, characteristic->UUID);
 				res =  res +  strlen(characteristic->UUID) + 1;
-			
+				
 				//uint8_t* endptr;
 				characteristic->handle = strtol(res, NULL, 16);
 
 				#ifdef PRINT_DEBUG_MSG
 				printf("Registered characteristic %s, with handle %04X\r\n", characteristic->UUID, characteristic->handle);
 				#endif
-			}	
+			}
 			else
 			{
 				return BLE_FAIL;
@@ -226,37 +306,90 @@ static ble_error_t rn487x_gatt_init(struct ble_server* ctx)
 	return BLE_NOERR;
 }
 
-static struct ble_gatt_ops rn487x_gatt_ops = {
-	.register_service = rn487x_register_service,
-	.register_characteristic = rn487x_register_characteristic,
-	.read_value = rn487x_read_value,
-	.write_value = rn487x_write_value,
-	.init = rn487x_gatt_init,
-};
-
-static struct ble_gap_ops rn487x_gap_ops = {
-
-};
-
-static void rn487x_init(struct ble_server* ctx)
+ble_error_t rn487x_register_service(struct gatt_service* service)
 {
+	sprintf(rn487x_cmd_buff_a, "PS,%s\r\n", service->UUID);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+	return rn487x_get_err_from_response();
+}
 
-#ifdef PRINT_DEBUG_MSG
-	printf("\r\nInitializing rn487x\r\n");
-#endif
+ble_error_t rn487x_register_characteristic(struct gatt_characteristic* characteristic)
+{
+	sprintf(rn487x_cmd_buff_a, "PC,%s,%02X,%02X\r\n", characteristic->UUID, characteristic->properties, characteristic->data_len);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+	return rn487x_get_err_from_response();
+}
 
-	rx487x_set_ISR_cb(rn487x_cb_isr, RX_CB);
+/* Helper GAP Functions */
 
-	ctx->sys->reboot(ctx);
-	ctx->sys->factory_reset(ctx);
+ble_error_t rn487x_set_address(struct ble_server* ctx, const uint8_t payload[])
+{
+	char *ptr = &rn487x_cmd_buff_b[0];
 
-	//init gap services
+	int i;
 
-	// init gatt services 
-	ctx->gatt->init(ctx);
+	for (i = 0; i < MAC_ADDRESS_BYTE_LEN; i++)
+	{
+		ptr += sprintf(ptr, "%02X", payload[i]);
+	}
 
+	sprintf(rn487x_cmd_buff_a, "&,%s\r\n", rn487x_cmd_buff_b);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+}
+
+ble_error_t rn487x_set_device_name(struct ble_server* ctx, const uint8_t* name)
+{
+	sprintf(rn487x_cmd_buff_a, "S-,%s\r\n", name);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+}
+
+ble_error_t rn487x_set_appearance(struct ble_server* ctx, const ble_gap_appearance_t appearance)
+{
+	sprintf(rn487x_cmd_buff_a, "SDA,%04X\r\n", appearance);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+}
+
+ble_error_t rn487x_set_connection_params(struct ble_server* ctx,
+											const uint16_t min_interval,
+											const uint16_t max_interval,
+											const uint16_t latency,
+											const uint16_t timeout)
+{
+	// ST,<hex16>,<hex16>,<hex16>,<hex16>
+	sprintf(rn487x_cmd_buff_a, "ST,%04X,%04X,%04X,%04X\r\n",
+	min_interval, max_interval, latency, timeout);
+
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
 
 }
+
+ble_error_t rn487x_set_security(struct ble_server* ctx,
+										const ble_io_capabilities_t io_capabilities,
+										const uint8_t* passkey)
+{
+	sprintf(rn487x_cmd_buff_a, "SA,%d\r\n", io_capabilities);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+
+	sprintf(rn487x_cmd_buff_a, "SP,%s\r\n", passkey);
+	rn487x_send_ascii_command(rn487x_cmd_buff_a);
+}
+
+ble_error_t rn487x_gap_init(struct ble_server* ctx)
+{
+	if(ctx->config->address != NULL)
+	rn487x_set_address(ctx, ctx->config->address);
+
+	if(ctx->config->device_name != NULL)
+	rn487x_set_device_name(ctx, ctx->config->device_name);
+
+	rn487x_set_security(ctx, ctx->config->io_capabilities, ctx->config->passkey);
+	rn487x_set_appearance(ctx, ctx->config->advertisement_appearance);
+	rn487x_set_connection_params(ctx, ctx->config->connection_min_interval, ctx->config->connection_max_interval, ctx->config->connection_latency, ctx->config->connection_timeout);
+	
+	ctx->sys->reboot(ctx);
+}
+
+/* Helper ASCII Functions */
 
 static void rn487x_clear_rx_buff()
 {
@@ -317,4 +450,26 @@ void rn487x_send_ascii_command(const uint8_t* cmd)
 	printf("%s", rn487x_rx_buff);
 	#endif
 
+}
+
+
+void rn487x_usb_cdc_isr()
+{
+
+	if(usb_rx_wptr < (RN487X_USB_CDC_BUFF_SIZE - 2))
+	{
+		rn487x_usb_rx_buff[usb_rx_wptr] = usb_cdc_get_data();
+		printf("%c", rn487x_usb_rx_buff[usb_rx_wptr]);
+		usb_rx_wptr = (usb_rx_wptr + 1);
+	}
+	else
+	{
+		usb_cdc_get_data();
+	}
+	
+}
+
+uint8_t* rn487x_get_response(void)
+{
+	return rn487x_rx_buff;
 }
