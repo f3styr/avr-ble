@@ -123,8 +123,6 @@ struct ble_server_config
 };
 
 
-
-
 struct ble_server {
 				
 	struct ble_server_config*	config;
@@ -142,7 +140,11 @@ struct ble_events {
 	
 	void (*cb_on_new_connection)(void);
 	void (*cb_on_disconnect)(void);
-
+	void (*cb_on_connection_secured)(void);
+	void (*cb_on_bond)(void);
+	void (*cb_on_uart_response)(void);
+	void (*cb_on_recieve_notification)(void);
+	void (*cb_on_recieve_write_request)(void);
 };
 
 struct ble_sys_ops {
@@ -150,25 +152,23 @@ struct ble_sys_ops {
 	ble_error_t (*shutdown)(struct ble_server* ctx);
 	ble_error_t (*reboot)(struct ble_server* ctx);
 	ble_error_t (*factory_reset)(struct ble_server* ctx);
+
 };
 
 struct ble_gatt_ops {
 
+	ble_error_t (*send_notification)(struct gatt_characteristic* characteristic, const uint8_t payload[]);
+	ble_error_t (*read_notification)(struct gatt_characteristic* characteristic, uint8_t destination[]);
 	ble_error_t	(*read_value)(struct gatt_characteristic* characteristic, uint8_t destination[]);
 	ble_error_t	(*write_value)(struct gatt_characteristic* characteristic, const uint8_t payload[]);	
 };
 
 struct ble_gap_ops {
 	
-	// get connected devices
-	// start/stop advertising
-	// kick/ban device
-	// on device connected
-	// 
 	ble_error_t (*start_advertising)(struct ble_server* ctx);	
 	ble_error_t (*stop_advertising)(struct ble_server* ctx);	
 	ble_error_t (*kill_connection)(struct ble_server* ctx);
-	
+	ble_error_t (*clear_bonding_info)(struct ble_server* ctx);
 
 };	
 	
