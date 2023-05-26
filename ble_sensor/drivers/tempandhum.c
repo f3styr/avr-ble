@@ -8,7 +8,6 @@ i2c_error_t err;
 int16_t H0_RH_X2, H1_RH_X2, T0_DEGC_X8, T1_DEGC_X8, T1_T0_MSB, H0_T0, H1_T0, T0_OUT, T1_OUT;
 
 
-
 void tempandhum_init(void)
 {
 
@@ -112,8 +111,6 @@ float temphum_get_humidity(void)
 
     float result = H0_RH_X2 / 2.0 + (humidity - H0_T0) * (H1_RH_X2 - H0_RH_X2) / 2.0 / (H1_T0 - H0_T0);
 	
-	printf("humidity %d rH \r\n", (int)result);
-	
 	return result;
 }
 
@@ -145,8 +142,6 @@ float temphum_get_temp(void)
 	}
 
 	float result = T0_DEGC_X8 / 8.0 + (temperature - T0_OUT) * (T1_DEGC_X8 - T0_DEGC_X8) / 8.0 / (T1_OUT - T0_OUT);
-	
-	printf("temp %d C \r\n", (int)result);
 	
 	return result;
 

@@ -59,7 +59,6 @@ void bma253_print_accel(void)
 	z_accel = ( (((int16_t)msb_data) << 8) | (lsb_data) ) >> 4;	
 	
 
-	printf("Accel : (%d, %d, %d)\r", x_accel, y_accel, z_accel);
 
 }
 

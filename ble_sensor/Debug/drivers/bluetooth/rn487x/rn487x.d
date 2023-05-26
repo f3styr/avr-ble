@@ -29,7 +29,8 @@ drivers/bluetooth/rn487x/rn487x.d drivers/bluetooth/rn487x/rn487x.o: \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
- ../drivers/bluetooth/rn487x/rn487x.h
+ ../drivers/bluetooth/rn487x/rn487x.h \
+ f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\errno.h
 
 ../drivers/bluetooth/ble.h:
 
@@ -110,3 +111,5 @@ f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h:
 
 ../drivers/bluetooth/rn487x/rn487x.h:
+
+f:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\errno.h:

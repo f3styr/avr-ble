@@ -1,5 +1,6 @@
 ﻿#include <drivers/bluetooth/ble.h>
 #include "rn487x.h"
+#include <errno.h>
 
 #define PRINT_DEBUG_MSG
 
@@ -31,6 +32,7 @@
 #define RN487x_RESPONSE_RECIEVE_WRITE_REQUEST	"%WV,"
 
 #define RN487X_RESPONSE_ERR "Err"
+#define RN487X_RESPONSE_SUCC "AOK"
 
 #define MAC_ADDRESS_BYTE_LEN 6
 
@@ -43,20 +45,20 @@ static volatile size_t usb_rx_wptr = 0;
 static volatile uint8_t rn487x_cmd_buff_a[RN487X_CMD_BUFF_SIZE];
 static volatile uint8_t rn487x_cmd_buff_b[RN487X_CMD_BUFF_SIZE];
 
-
-
 static struct ble_events rn487x_events;
 static struct ble_sys_ops rn487x_sys_ops;
 static struct ble_gatt_ops rn487x_gatt_ops;
 static struct ble_gap_ops rn487x_gap_ops;
 
 static void rn487x_clear_rx_buff(void);
-static void rn487x_init(struct ble_server*);
+
 static void rn487x_probe(void);
 static void rn487x_cb_isr(void);
 static void rn487x_usb_cdc_isr(void);
 static void rn487x_main_loop(struct ble_server*);
+static void rn487x_rx_strstr(uint8_t* str);
 
+ble_error_t rn487x_init(struct ble_server*);
 
 ble_error_t rn487x_read_handle(uint8_t, uint8_t, uint8_t*);
 ble_error_t rn487x_write_handle(uint8_t, uint8_t, const uint8_t*);
@@ -85,14 +87,14 @@ static struct gatt_characteristic *temp_and_hum_characteristics[] =
 
 struct gatt_characteristic temp_read_characteristic = {
 	.UUID = RN487X_TEMP_READ_CHARACTERISTIC_UUID,
-	.properties = BLE_PROP_FLAG_READ | BLE_PROP_FLAG_NOTIFY | BLE_PROP_FLAG_WRITE | BLE_PROP_FLAG_WRITE_WITHOUT_RESPONSE,
-	.data_len = 1,
+	.properties = BLE_PROP_FLAG_READ | BLE_PROP_FLAG_NOTIFY,
+	.data_len = 10,
 };
 
 struct gatt_characteristic humidity_read_characteristic = {
 	.UUID = RN487X_HUM_READ_CHARACTERISTIC_UUID,
-	.properties = BLE_PROP_FLAG_READ | BLE_PROP_FLAG_NOTIFY | BLE_PROP_FLAG_WRITE | BLE_PROP_FLAG_WRITE_WITHOUT_RESPONSE,
-	.data_len = 1,	
+	.properties = BLE_PROP_FLAG_READ | BLE_PROP_FLAG_NOTIFY,
+	.data_len = 10,	
 };
 
 struct gatt_service temp_and_hum_service = {
@@ -100,8 +102,6 @@ struct gatt_service temp_and_hum_service = {
 	.characteristics = &temp_and_hum_characteristics,
 	.characteristics_count = 2,
 };
-
-
 
 struct ble_server_config rn487x_config = {
 	.device_name = "rn4870",
@@ -132,7 +132,6 @@ struct ble_server rn487x = {
 	//.probe = rn487x_probe,
 	
 };
-
 
 static void rn487x_parse_responses(struct ble_server* ctx)
 {
@@ -193,7 +192,7 @@ static void rn487x_main_loop(struct ble_server* ctx)
 		usb_rx_wptr = 0;
 	}
 
-	_delay_ms(100);
+	_delay_ms(300);
 	//parse responses
 	// on connection
 	// on disconnect
@@ -205,7 +204,7 @@ static void rn487x_main_loop(struct ble_server* ctx)
 	//rn487x_clear_rx_buff();
 }
 
-static void rn487x_init(struct ble_server* ctx)
+ble_error_t rn487x_init(struct ble_server* ctx)
 {
 
 	#ifdef PRINT_DEBUG_MSG
@@ -231,7 +230,7 @@ static ble_error_t rx487x_shutdown(struct ble_server* ctx)
 {
 	RN487X_RST_set_level(false);
 	
-	return BLE_NOERR;
+	return 1;
 }
 
 static ble_error_t rx487x_reboot(struct ble_server* ctx)
@@ -242,13 +241,32 @@ static ble_error_t rx487x_reboot(struct ble_server* ctx)
 	RN487X_RST_set_level(true);
 	_delay_ms(RN487X_STARTUP_TIME);
 	
-	return rn487x_get_err_from_response();
+	if(strstr(rn487x_rx_buff, "%REBOOT%"))
+	{
+		return 1;
+	}
+	else
+	{
+		//perror("Failed to reboot\r\n");
+		return 0;
+	}
+
 }
 
 static ble_error_t rx487x_factory_reset(struct ble_server* ctx)
 {	
 	rn487x_send_ascii_command("SF,2\r\n");
 	return rn487x_get_err_from_response();
+
+	if(strstr(rn487x_rx_buff, "Reboot"))
+	{
+		return 1;
+	}
+	else
+	{
+		//perror("Factory reset failed\r\n");
+		return 0;
+	}
 }
 
 static struct ble_sys_ops rn487x_sys_ops = {
@@ -271,21 +289,9 @@ ble_error_t rn487x_write_value(struct gatt_characteristic* characteristic, const
 	return rn487x_write_handle(characteristic->handle, characteristic->data_len, payload);
 }
 
-ble_error_t rn487x_read_notification(struct gatt_characteristic* characteristic, uint8_t destination[])
-{
-	return rn487x_read_handle(characteristic->handle+1, characteristic->data_len, destination);
-}
-
-ble_error_t rn487x_send_notification(struct gatt_characteristic* characteristic, const uint8_t payload[])
-{
-	return rn487x_write_handle(characteristic->handle+1, characteristic->data_len, payload);
-}
-
 static struct ble_gatt_ops rn487x_gatt_ops = {
 	.read_value = rn487x_read_value,
 	.write_value = rn487x_write_value,
-	.send_notification = rn487x_send_notification,
-	.read_notification = rn487x_read_notification,
 };
 
 /* GAP OPS */
@@ -440,10 +446,10 @@ ble_error_t rn487x_set_security(struct ble_server* ctx,
 ble_error_t rn487x_gap_init(struct ble_server* ctx)
 {
 	if(ctx->config->address != NULL)
-	rn487x_set_address(ctx, ctx->config->address);
+		rn487x_set_address(ctx, ctx->config->address);
 
 	if(ctx->config->device_name != NULL)
-	rn487x_set_device_name(ctx, ctx->config->device_name);
+		rn487x_set_device_name(ctx, ctx->config->device_name);
 
 	rn487x_set_security(ctx, ctx->config->io_capabilities, ctx->config->passkey);
 	rn487x_set_appearance(ctx, ctx->config->advertisement_appearance);
@@ -475,7 +481,6 @@ ble_error_t rn487x_read_handle(uint8_t handle, uint8_t data_len, uint8_t destina
 	{
 		return BLE_FAIL;
 	}
-
 }
 
 ble_error_t rn487x_write_handle(uint8_t handle, uint8_t data_len, const uint8_t payload[])
@@ -503,11 +508,12 @@ static void rn487x_clear_rx_buff()
 static ble_error_t rn487x_get_err_from_response()
 {
 	if(	strstr(rn487x_rx_buff, RN487X_RESPONSE_ERR) != NULL)
-	return BLE_FAIL;
+	return 0;
 	else
-	return BLE_NOERR;
+	return 1;
 
 }
+
 
 static void rn487x_cb_isr()
 {
@@ -519,6 +525,7 @@ void rn487x_send_ascii_command(const uint8_t* cmd)
 {
 	uint8_t id = 0;
 	
+
 	rn487x_clear_rx_buff();
 	
 	// enter cmd mode

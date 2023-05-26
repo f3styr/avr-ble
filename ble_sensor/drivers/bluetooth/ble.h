@@ -85,6 +85,8 @@ enum {
 typedef enum  {
 	BLE_FAIL,
 	BLE_NOERR,	
+	BLE_INVALID_ARGUMENT,
+
 } ble_error_t;
 
 struct gatt_characteristic {
@@ -131,9 +133,10 @@ struct ble_server {
 	struct ble_gap_ops*			gap;
 	struct ble_events*			events;
 	
-	void (*init)(struct ble_server* ctx);
-	void (*probe)(struct ble_server* ctx);
+	ble_error_t (*init)(struct ble_server* ctx);
+	ble_error_t (*probe)(struct ble_server* ctx);
 	void (*main_loop)(struct ble_server* ctx);
+
 };
 
 struct ble_events {
@@ -157,8 +160,6 @@ struct ble_sys_ops {
 
 struct ble_gatt_ops {
 
-	ble_error_t (*send_notification)(struct gatt_characteristic* characteristic, const uint8_t payload[]);
-	ble_error_t (*read_notification)(struct gatt_characteristic* characteristic, uint8_t destination[]);
 	ble_error_t	(*read_value)(struct gatt_characteristic* characteristic, uint8_t destination[]);
 	ble_error_t	(*write_value)(struct gatt_characteristic* characteristic, const uint8_t payload[]);	
 };
